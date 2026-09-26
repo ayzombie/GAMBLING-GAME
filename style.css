@@ -1,0 +1,536 @@
+body {
+    margin: 0;
+}
+
+#gameCanvas {
+    display: block;
+}
+
+.game-modal {
+    box-sizing: border-box;
+    width: 80vw;
+    height: 80vh;
+    height: 80dvh;
+    max-width: 80vw;
+    max-height: 80dvh;
+    margin: auto;
+    padding: 0;
+    border: 0;
+    background: white;
+    color: #111;
+    box-shadow: 0 0 65px 25px rgba(0, 0, 0, 0.55);
+    overflow: auto;
+}
+
+.game-modal::backdrop {
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.8));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.game-modal-content {
+    min-height: 100%;
+}
+
+.game-modal.inventory-modal {
+    position: fixed;
+    inset: 50% auto auto 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    width: min(480px, 92vw);
+    height: fit-content;
+    min-height: 0;
+    max-width: 92vw;
+    max-height: 92dvh;
+    padding: 6px;
+    border: 4px solid;
+    border-color: #f4f4f4 #555 #555 #f4f4f4;
+    background: #c6c6c6;
+    box-shadow: 0 0 0 3px #252525, 0 15px 50px #0008;
+}
+
+.inventory-modal .game-modal-content {
+    min-height: 0;
+    height: auto;
+}
+
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    gap: 3px;
+}
+
+.inventory-slot {
+    position: relative;
+    aspect-ratio: 1;
+    min-width: 0;
+    box-sizing: border-box;
+    background: #8b8b8b;
+    border: 3px solid;
+    border-color: #373737 #fff #fff #373737;
+}
+
+.inventory-slot:hover {
+    background: #a0a0a0;
+}
+
+.inventory-icon {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+}
+
+.inventory-count {
+    position: absolute;
+    right: 3px;
+    bottom: 1px;
+    color: white;
+    font: bold 12px monospace;
+    text-shadow: 2px 2px #333;
+    pointer-events: none;
+}
+
+.game-modal.mining-house-modal {
+    width: min(560px, 92vw);
+    max-height: min(250px, 75dvh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    scrollbar-color: #737373 #c6c6c6;
+}
+
+.mining-material-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.mining-material-slot:focus-visible {
+    outline: 2px solid white;
+    outline-offset: -5px;
+    background: #aaa;
+}
+
+.worker-slot {
+    aspect-ratio: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px 2px 7px;
+    overflow: hidden;
+}
+
+.worker-icon {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    flex-shrink: 0;
+    overflow: hidden;
+    filter: drop-shadow(1px 2px 0 #3338);
+}
+
+.worker-pickaxe {
+    transform-origin: 30px 77px;
+    animation: pickaxe-swing 2s infinite;
+}
+
+@keyframes pickaxe-swing {
+    0%, 45%, 100% { transform: rotate(0deg); }
+    60% { transform: rotate(-22deg); animation-timing-function: ease-in; }
+    72% { transform: rotate(38deg); }
+    79% { transform: rotate(29deg); }
+    85% { transform: rotate(34deg); }
+}
+
+.worker-tier {
+    position: absolute;
+    top: 3px;
+    left: 5px;
+    color: #fff;
+    font: bold 11px monospace;
+    text-shadow: 1px 1px #333;
+}
+
+.worker-name {
+    color: #fff;
+    font: bold 11px/1.2 monospace;
+    text-align: center;
+    text-shadow: 1px 1px #444;
+    overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .worker-pickaxe { animation: none; }
+}
+
+button.inventory-slot {
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+}
+
+button.worker-slot { padding: 5px 2px 7px; }
+.inventory-slot:focus-visible { outline: 2px solid #ffe79d; outline-offset: -4px; }
+
+.cursor-stack {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.game-modal.miner-detail-modal {
+    width: min(760px, 94vw);
+    max-width: 94vw;
+    max-height: 85dvh;
+    padding: 16px;
+    color: #242424;
+    font: 14px/1.4 Arial, sans-serif;
+}
+.miner-detail-modal h2 { margin: 12px 0 4px; }
+.miner-detail-modal h3 { margin: 14px 0 6px; }
+.miner-detail-modal p { margin: 6px 0; }
+.miner-upgrades { display: flex; gap: 8px; flex-wrap: wrap; }
+.miner-upgrades button, .miner-detail-modal > .game-modal-content > button {
+    padding: 8px 12px;
+    border: 2px solid;
+    border-color: #eee #555 #555 #eee;
+    background: #999;
+    color: #111;
+    cursor: pointer;
+}
+.miner-upgrades button:disabled { opacity: 0.55; cursor: default; }
+.miner-storage { max-height: 190px; overflow-y: auto; padding: 2px; margin-bottom: 8px; }
+.miner-storage .inventory-slot { width: 100%; max-height: 90px; }
+.inventory-help { font-size: 12px; color: #444; }
+.empty-material-label {
+    display: block;
+    padding: 3px;
+    font: 11px Arial, sans-serif;
+    color: #333;
+    overflow-wrap: anywhere;
+}
+
+/* Mining screens are twice the previous size, capped to fit the viewport. */
+.game-modal.mining-house-modal {
+    width: min(1120px, 94vw);
+    max-width: 94vw;
+    height: min(500px, 88dvh);
+    max-height: 88dvh;
+    padding: 24px;
+    color: #242424;
+    font: 20px/1.4 Arial, sans-serif;
+}
+.game-modal.miner-detail-modal {
+    width: min(1520px, 94vw);
+    height: min(800px, 88dvh);
+    font-size: 24px;
+    padding: 32px;
+}
+.workers-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.workers-list .worker-slot { width: 100%; min-width: 0; padding: 12px; }
+.workers-list .worker-tier { position: static; font-size: 22px; }
+.workers-list .worker-name { font-size: 20px; }
+.workers-list .worker-icon { width: 190px; max-width: 100%; }
+.master-output { display: grid; grid-template-columns: repeat(auto-fill, 80px); grid-auto-rows: 80px; align-content: start; gap: 8px; height: 176px; overflow-y: auto; scrollbar-gutter: stable; }
+
+.master-output .inventory-slot { max-width: 120px; }
+.master-player-inventory { max-width: 700px; }
+.mining-house-modal h2 { margin: 12px 0; }
+.mining-house-modal h3 { margin: 10px 0; }
+.miner-upgrades { flex-direction: column; align-items: flex-start; gap: 24px; margin: 24px 0; }
+.miner-upgrade-block button, .miner-detail-modal > .game-modal-content > button { font: inherit; padding: 12px 20px; }
+.miner-upgrade-block p { margin: 6px 0; }
+.miner-upgrade-block small { font-size: 16px; }
+.miner-countdown { margin-top: 24px !important; }
+
+.miner-attributes,
+.miner-detail-modal .miner-upgrades {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    align-items: stretch;
+}
+.miner-attributes > p,
+.miner-upgrade-block {
+    padding: 20px;
+    background: #ffffff24;
+    border: 2px solid;
+    border-color: #eee #929292 #929292 #eee;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+.miner-upgrade-block button { width: 100%; }
+.miner-cycle-section { width: 100%; margin-top: 32px; }
+.miner-cycle-section .miner-countdown { text-align: center; }
+.miner-cycle-bar {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    height: 34px;
+    margin-top: 12px;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 3px solid;
+    border-color: #555 #eee #eee #555;
+    background: #777;
+    accent-color: #79b84d;
+}
+.miner-cycle-bar::-webkit-progress-bar { background: #777; }
+.miner-cycle-bar::-webkit-progress-value { background: linear-gradient(#a6d477, #639b39); }
+.miner-cycle-bar::-moz-progress-bar { background: linear-gradient(#a6d477, #639b39); }
+@media (max-width: 600px) {
+    .miner-attributes,
+    .miner-detail-modal .miner-upgrades { grid-template-columns: 1fr; gap: 12px; }
+    .game-modal.miner-detail-modal { padding: 16px; font-size: 18px; }
+}
+
+.game-modal.market-modal {
+    width: min(850px, 94vw);
+    max-width: 94vw;
+    max-height: 85dvh;
+    padding: 20px;
+    font: 16px Arial, sans-serif;
+}
+.market-row {
+    display: grid;
+    grid-template-columns: 48px minmax(80px, 1fr) minmax(120px, 2fr) auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #999;
+}
+.market-row button { padding: 8px 12px; cursor: pointer; }
+.market-row button:disabled { cursor: default; opacity: 0.5; }
+@media (max-width: 600px) {
+    .market-row { grid-template-columns: 40px 1fr 1fr; gap: 6px; }
+}
+
+.market-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.market-item { display: flex; align-items: center; gap: 16px; padding: 12px; background: #aaa; border: 2px solid; border-color: #eee #666 #666 #eee; font: bold 17px Arial; cursor: pointer; }
+.market-item:hover { background: #bbb; }
+.market-item .inventory-icon, .market-detail-header .inventory-icon { width: 48px; height: 48px; flex-shrink: 0; }
+.market-detail-header { display: flex; align-items: center; gap: 12px; }
+.market-current-price { font: bold 36px Arial; margin: 12px 0 4px; }
+.market-price-change { font: 14px Arial; }
+.market-price-change[data-direction='up'] { color: #176b43; }
+.market-price-change[data-direction='down'] { color: #a12b30; }
+.market-chart { width: 100%; min-width: 0; margin-top: 18px; }
+.market-chart-scroll { overflow-x: auto; overflow-y: hidden; width: 100%; overscroll-behavior-x: contain; background: #182129; scrollbar-color: #718492 #182129; }
+.market-chart-track { height: 280px; }
+.market-chart-canvas { display: block; position: sticky; left: 0; height: 280px; }
+.market-actions { display: flex; gap: 12px; margin-top: 14px; }
+.market-actions button { flex: 1; padding: 12px; cursor: pointer; font-weight: bold; }
+.market-actions button:disabled { cursor: default; opacity: .5; }
+.market-holdings { color: #444; font-size: 14px; }
+@media (max-width: 500px) { .market-list { grid-template-columns: 1fr; } }
+
+.game-modal.pause-modal {
+    width: min(360px, 90vw);
+    height: auto;
+    max-height: 85dvh;
+    padding: 28px;
+    text-align: center;
+    background: #c6c6c6;
+    border: 4px solid;
+    border-color: #eee #555 #555 #eee;
+    font: 18px Arial, sans-serif;
+}
+.pause-modal .game-modal-content { min-height: 0; }
+.pause-modal h2 { margin: 0 0 24px; }
+.pause-modal button { width: 100%; padding: 12px; font: bold 18px Arial; cursor: pointer; }
+.pause-modal p { font-size: 14px; margin: 18px 0 0; }
+.game-paused .worker-pickaxe { animation-play-state: paused; }
+
+.market-summary { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 1fr); gap: 24px; align-items: center; }
+.market-summary-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 0; }
+.market-summary-stats > div:last-child { grid-column: 1 / -1; }
+.market-summary-stats dt { font: 12px Arial, sans-serif; color: #555; margin-bottom: 4px; }
+.market-summary-stats dd { margin: 0; font: bold 16px Arial, sans-serif; }
+@media (max-width: 600px) {
+    .market-summary { grid-template-columns: 1fr; gap: 12px; }
+}
+
+/* Radio speech anchored to the player, without a modal or backdrop. */
+.news-bubble {
+    position: fixed; z-index: 5; transform: translateX(-50%);
+    box-sizing: border-box; width: min(360px, calc(100vw - 24px));
+    padding: 18px 20px 14px; border: 2px solid #384752; border-radius: 20px;
+    background: #fffbed; color: #26343d; text-align: left;
+    font: 17px/1.5 Arial, sans-serif; cursor: pointer;
+    box-shadow: 0 4px 12px #0002;
+}
+.news-bubble[hidden] { display: none; }
+.news-bubble::after {
+    content: ''; position: absolute; left: var(--tail-left, 50%); bottom: -10px;
+    width: 16px; height: 16px; transform: translateX(-50%) rotate(45deg);
+    background: #fffbed; border-right: 2px solid #384752; border-bottom: 2px solid #384752;
+}
+.news-bubble-text { display: block; min-height: 3em; max-height: 40vh; overflow-y: auto; overflow-wrap: anywhere; white-space: pre-wrap; }
+.news-bubble small { display: block; margin-top: 10px; font-size: 11px; color: #687681; }
+.news-bubble:focus-visible { outline: 3px solid #cb984c; outline-offset: 4px; }
+
+/* Worker detail screens share a consistent layout across all ten tiers. */
+.game-modal.miner-detail-modal { width: min(1080px, 94vw); font-size: 17px; padding: 26px; background: #c6c6c6; }
+.miner-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.miner-toolbar button { padding: 9px 16px; font: inherit; cursor: pointer; }
+.miner-wallet { font-weight: bold; font-size: 15px; }
+.miner-hero { display: flex; align-items: center; gap: 24px; margin: 22px 0; padding: 16px 24px; border-left: 6px solid var(--tier-color); background: #333c43; color: #fff4df; }
+.miner-hero .worker-icon { width: 130px; height: 130px; flex-shrink: 0; }
+.miner-identity h2 { margin: 6px 0 10px; font-size: 28px; }
+.miner-identity > small { font-size: 12px; letter-spacing: 2px; color: #d2d8d8; }
+.miner-status { font-size: 13px; color: #d2d8d8; }
+.miner-stat-card { display: flex; flex-direction: column; gap: 8px; padding: 18px; background: #deded6; border: 2px inset #eee; }
+.miner-stat-card strong { font-size: 30px; }
+.miner-stat-card small { font-size: 13px; color: #505953; }
+.miner-detail-modal .miner-upgrades { margin: 18px 0; gap: 18px; }
+.miner-upgrade-block { background: #deded6; text-align: left; padding: 18px; }
+.miner-upgrade-block h3 { margin-top: 0; }
+.miner-upgrade-block button { margin: 12px 0 8px; font-size: 16px; padding: 12px; cursor: pointer; }
+.miner-upgrade-block small { display: block; font-size: 12px; }
+.miner-cycle-section { padding: 18px; box-sizing: border-box; background: #b3bcb0; margin-top: 18px; }
+.miner-cycle-section .miner-countdown { margin: 0 !important; font-size: 15px; }
+.miner-drops { margin-top: 24px; }
+.miner-drop-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.miner-drop { display: flex; align-items: center; gap: 8px; padding: 8px; background: #deded6; font-size: 13px; }
+.miner-drop .inventory-icon { width: 32px; height: 32px; flex-shrink: 0; }
+.miner-drop strong { margin-left: auto; }
+.news-bubble > strong { display: block; margin-bottom: 8px; font-size: 11px; letter-spacing: 1px; color: #526e64; }
+@media (max-width: 650px) {
+    .miner-drop-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .miner-hero { gap: 12px; padding: 12px; }
+    .miner-hero .worker-icon { width: 80px; height: 80px; }
+    .miner-identity h2 { font-size: 21px; }
+    .miner-wallet { font-size: 12px; }
+}
+
+.worker-tabs { display: flex; gap: 10px; margin: 16px 0 8px; }
+.worker-tab { padding: 10px 24px; background: #e0e1d8; border: 2px outset #eee; font: bold 16px Arial; cursor: pointer; }
+.worker-tab:focus-visible { outline: 3px solid #416641; }
+.worker-section { margin-bottom: 24px; scroll-margin-top: 12px; }
+.worker-shop-balance { font-size: 14px; }
+.workers-list .worker-owned-label { font: bold 13px Arial; color: #e5ffd8; background: #466a3c; padding: 4px 10px; border-radius: 3px; text-shadow: none; }
+.workers-list .worker-unowned { background: #686b68; cursor: default; justify-content: flex-start; }
+.worker-unowned .worker-name { opacity: .65; font-size: 16px; }
+.worker-buy-picture { width: 100%; position: relative; display: grid; place-items: center; }
+.worker-unowned .worker-icon { opacity: .3; filter: grayscale(.7); }
+.worker-unowned .worker-pickaxe { animation: none; }
+.worker-buy-button { position: absolute; left: 5%; width: 90%; top: 50%; transform: translateY(-50%); padding: 12px 4px; font: bold 15px Arial; background: #e4d09c; color: #272d24; border: 3px outset #f3e7c7; cursor: pointer; overflow-wrap: anywhere; }
+.worker-buy-button:disabled { background: #b5b1a5; color: #53554e; cursor: default; }
+.worker-buy-stats { display: flex; flex-direction: column; gap: 6px; width: 100%; font: 12px/1.4 Arial; text-align: center; color: #f0f0e3; overflow-wrap: anywhere; }
+
+/* Tutorial overlay uses a spotlight rather than dimming the highlighted target. */
+.tutorial-overlay {
+    position: fixed; inset: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none;
+    margin: 0; padding: 0; border: 0; overflow: hidden; background: transparent;
+    pointer-events: none; color: #27332f; font: 17px/1.5 Arial, sans-serif;
+}
+.tutorial-overlay::backdrop { background: transparent; pointer-events: none; }
+.tutorial-spot { position: absolute; box-sizing: border-box; border: 2px solid #f4cd78; border-radius: 8px; box-shadow: 0 0 0 9999px #0006; }
+.tutorial-arrow { position: absolute; color: #ffe195; font: bold 44px Arial; text-shadow: 0 2px 3px #222; }
+.tutorial-arrow[hidden] { display: none; }
+.tutorial-panel { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); width: min(470px, calc(100vw - 40px)); box-sizing: border-box; padding: 18px 22px; border: 2px solid #63583f; border-radius: 16px; background: #fff8df; box-shadow: 0 6px 24px #0005; pointer-events: auto; }
+.tutorial-panel strong { display: block; color: #6e5832; font-size: 14px; }
+.tutorial-panel p { margin: 8px 0 14px; }
+.tutorial-panel small { display: block; font-size: 12px; color: #62685c; }
+.tutorial-panel button { padding: 9px 20px; margin-right: 10px; border: 2px outset #e0d2a7; border-radius: 4px; background: #e3d29c; color: #2d3728; font: bold 16px Arial; cursor: pointer; }
+.tutorial-panel button:focus-visible { outline: 3px solid #947538; outline-offset: 3px; }
+.tutorial-panel-top { top: 72px; bottom: auto; }
+.tutorial-choice .tutorial-panel { top: 50%; bottom: auto; transform: translate(-50%, -50%); text-align: center; }
+.tutorial-choice .tutorial-panel strong { margin-bottom: 20px; font-size: 24px; }
+.tutorial-frozen .worker-pickaxe { animation-play-state: paused; }
+body:has(.tutorial-overlay:popover-open) .game-modal::backdrop { background: transparent; backdrop-filter: none; }
+
+/* Coin Flip: coin-count categories lead to outcome choices and a wager. */
+.game-modal.coin-modal {
+    width: min(900px, 94vw); max-width: 94vw; height: auto; max-height: 90dvh;
+    padding: 28px; border: 2px solid #be9859; border-radius: 16px;
+    background: linear-gradient(140deg, #292039, #182b36); color: #fff0cd;
+    font: 16px/1.5 Arial, sans-serif;
+}
+.coin-modal .game-modal-content { min-height: 0; }
+.coin-header { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 20px; }
+.coin-header small { color: #d2a77b; letter-spacing: 2px; font-size: 11px; }
+.coin-header h2 { margin: 2px 0; font-size: 30px; }
+.coin-header-actions { display: flex; align-items: center; gap: 12px; }
+.coin-wallet { font-weight: bold; font-size: 14px; }
+.coin-intro, .coin-rules { color: #cbc2d2; }
+.coin-categories { display: grid; gap: 10px; }
+.coin-category { display: grid; grid-template-columns: minmax(100px, 1fr) 1fr auto; align-items: center; gap: 12px; padding: 17px 20px; text-align: left; background: #ffffff08; border: 1px solid #76627d; border-radius: 10px; color: #fff0cd; cursor: pointer; font: inherit; }
+.coin-category-symbol { color: #f5ce70; letter-spacing: 4px; font-size: 21px; }
+.coin-category > span:last-child { font-size: 13px; color: #b6d6d2; }
+.coin-category:hover, .coin-option:hover { background: #ffffff16; border-color: #efc977; }
+.coin-back { padding: 7px 13px; color: #f0ddbb; background: #ffffff09; border: 1px solid #8c7966; border-radius: 6px; font: inherit; cursor: pointer; }
+.coin-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 18px; }
+.coin-options h3 { margin: 0 0 12px; font-size: 15px; color: #c6b7d1; }
+.coin-option { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; margin-bottom: 9px; padding: 13px; border: 1px solid #665773; border-radius: 8px; background: #ffffff06; color: #f8edd5; font: inherit; text-align: left; cursor: pointer; }
+.coin-option strong { color: #f1d489; white-space: nowrap; }
+.coin-option[aria-pressed='true'] { border-color: #f5cd74; background: #675235; box-shadow: inset 3px 0 #f5cd74; }
+.coin-play { background: #0c18223d; padding: 18px; border-radius: 12px; min-width: 0; }
+.coin-stage { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 9px; min-height: 92px; margin-bottom: 16px; perspective: 450px; }
+.coin-disc { display: grid; place-items: center; width: 48px; height: 48px; flex-shrink: 0; border: 3px solid #f5d99a; border-radius: 50%; outline: 1px solid #ae7a32; outline-offset: -6px; background: radial-gradient(circle at 30% 25%, #ffecaa, #c7923c); color: #624322; box-shadow: 0 5px 0 #77502b, 0 8px 12px #0005; font: bold 24px Georgia, serif; }
+.coin-disc[data-face='tails'] { background: radial-gradient(circle at 30% 25%, #e7ecf2, #929aaf); border-color: #d5dce9; color: #3f4964; }
+.coin-flipping .coin-disc { animation: coin-toss .32s ease-in-out infinite; animation-delay: var(--coin-delay); }
+@keyframes coin-toss { 0%,100% { transform: translateY(0) rotateY(0); } 50% { transform: translateY(-14px) rotateY(180deg); } }
+.coin-wager-label { display: block; font-size: 14px; color: #dfcfb9; }
+.coin-wager-label input { box-sizing: border-box; display: block; width: 100%; margin-top: 5px; padding: 12px; background: #0d1925; border: 1px solid #a58a65; border-radius: 6px; color: #fff0cd; font: bold 20px Arial; }
+.coin-preview { min-height: 42px; color: #cbd3c9; font-size: 13px; }
+.coin-flip-button { width: 100%; padding: 13px; border: 2px solid #f4d08b; border-radius: 8px; background: #ddba69; color: #302739; font: bold 18px Arial; cursor: pointer; }
+.coin-modal button:disabled { opacity: .45; cursor: default; }
+.coin-modal button:focus-visible, .coin-modal input:focus-visible { outline: 3px solid #79e2d7; outline-offset: 3px; }
+.coin-result { min-height: 54px; font-size: 14px; overflow-wrap: anywhere; }
+.coin-result[data-result='win'] { color: #9ce6b2; }
+.coin-result[data-result='loss'] { color: #f2a9b5; }
+.coin-rules { font-size: 12px; margin-bottom: 0; }
+@media (max-width: 650px) {
+    .game-modal.coin-modal { padding: 18px; }
+    .coin-layout { grid-template-columns: 1fr; gap: 12px; }
+    .coin-header-actions { flex-direction: column; align-items: flex-end; }
+    .coin-category { grid-template-columns: 1fr 1fr; padding: 12px; }
+    .coin-category > span:last-child { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) { .coin-flipping .coin-disc { animation: none; } }
+
+.game-over-screen {
+    position: fixed; inset: 0; box-sizing: border-box; margin: 0;
+    width: 100vw; height: 100dvh; max-width: none; max-height: none;
+    border: 0; padding: 28px; color: #fff; background: #000a;
+    font: 20px/1.6 Arial, sans-serif; text-align: center;
+}
+.game-over-screen[open] { display: flex; align-items: center; justify-content: center; }
+.game-over-screen::backdrop { background: transparent; }
+.game-over-screen h1 { font-size: 42px; margin: 0 0 18px; color: #e9c6b3; }
+.game-over-screen[data-stage='black'], .game-over-screen[data-stage='retry'] { background: #000; }
+.game-over-screen button { padding: 16px 42px; background: #ead9b3; color: #252321; border: 2px solid #fff0c5; border-radius: 8px; font: bold 24px Arial; cursor: pointer; }
+.game-over-screen [hidden] { display: none; }
+.game-over-screen button:focus-visible { outline: 3px solid #fff; outline-offset: 6px; }
+.game-over .worker-pickaxe, .game-over .coin-disc { animation-play-state: paused; }
+
+/* The standalone inventory doubles in size; embedded previews remain compact. */
+.game-modal.player-inventory-modal { width: min(960px, 94vw); max-width: 94vw; padding: 12px; }
+.player-inventory-modal .inventory-grid { gap: 6px; }
+.player-inventory-modal .inventory-slot { border-width: 6px; }
+.player-inventory-modal .inventory-count { font-size: 24px; right: 6px; bottom: 2px; }
+.balance-hud {
+    position: fixed; inset: 17px auto auto 22px; width: max-content; max-width: calc(100vw - 44px);
+    margin: 0; padding: 0; border: 0; background: transparent; overflow: visible;
+    color: #242424; font: bold 25px/30px Arial, sans-serif; pointer-events: none;
+    text-shadow: 0 1px 2px #fff, 0 0 5px #ffffffd9;
+}
+.balance-hud::backdrop { background: transparent; pointer-events: none; }
+.balance-hud-light { color: #fff0c7; text-shadow: 0 1px 3px #000, 0 0 5px #000; }
+.game-modal.market-modal { width: min(1100px, 94vw); }
+.market-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.market-inventory { width: min(440px, 100%); margin: 20px auto 0; }
+.market-inventory h3 { font-size: 14px; margin: 0 0 8px; }
+.market-inventory .inventory-slot { cursor: default; }
+.market-inventory .inventory-slot:hover { background: #8b8b8b; }
+@media (max-width: 850px) { .market-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 450px) { .market-list { grid-template-columns: 1fr; } }

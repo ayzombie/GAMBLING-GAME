@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const {default: Clock} = await import('data:text/javascript;base64,'+Buffer.from(fs.readFileSync('simulationClock.js','utf8')).toString('base64'));
+const clock = new Clock(0);
+assert.equal(clock.tick(1000),1);
+assert.equal(clock.tick(61000),60, 'Background gap is counted');
+assert.equal(clock.pause(61500),0.5, 'Time before Escape is counted');
+assert.equal(clock.tick(120000),0, 'Paused background time is excluded');
+clock.resume(180000);
+assert.equal(clock.tick(181000),1, 'Resume does not catch up paused time');
+assert.equal(clock.tick(180500),0, 'Older frame timestamps do not move clock backward');
+assert.equal(clock.tick(182000),1);
+const dense = new Clock(0), sparse = new Clock(0);
+let total=0;
+for(let t=1000;t<=60000;t+=1000) total+=dense.tick(t);
+assert.equal(total,sparse.tick(60000),'Throttled timers preserve elapsed time');
+console.log('Passed background catch-up, pause/resume, timestamp ordering, and throttled-timer accounting.');
