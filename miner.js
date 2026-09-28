@@ -49,7 +49,7 @@ export default class Miner {
         if (!['cycle', 'resources'].includes(track)) throw new Error('Unknown upgrade track');
         const level = track === 'cycle' ? this.cycleLevel : this.resourceLevel;
         if (level >= minerUpgrades.maxLevel) return null;
-        const base = track === 'cycle' ? minerUpgrades.cycleBaseCost : minerUpgrades.resourceBaseCost;
+        const base = this.tier.cost * (track === 'cycle' ? minerUpgrades.cycleBaseCostRatio : minerUpgrades.resourceBaseCostRatio);
         // Keep the accumulated price at level 20, then grow at the second rate.
         const earlyLevels = Math.min(level - 1, 19);
         const laterLevels = Math.max(0, level - 20);

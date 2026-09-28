@@ -1,5 +1,5 @@
 import { resourcePrices, gameState, marketHistory } from './gameData.js';
-import { createItemIcon } from './items.js';
+import { createItemIcon, itemCountLabel } from './items.js';
 import { countMaterial, sellMaterial } from './market.js';
 import { MarketChart, marketTime } from './marketChart.js';
 import { historyStats, changeText } from './marketStats.js';
@@ -13,11 +13,15 @@ export function setupMarketGui(gui, market, player) {
         inventoryPanel.replaceChildren();
         for (const stack of player.inventory.slots) {
             const slot = node('div', '', 'inventory-slot');
-            slot.title = stack ? `${stack.type}: ${stack.count}` : 'Empty slot';
+            slot.title = stack ? `${stack.type}: ${itemCountLabel(stack)}` : 'Empty slot';
             slot.setAttribute('role', 'img'); slot.setAttribute('aria-label', slot.title);
             if (stack) {
                 slot.append(createItemIcon(stack.type));
-                if (stack.count > 1) slot.append(node('span', String(stack.count), 'inventory-count'));
+                if (stack.count > 1 || stack.type === 'Money') {
+                    const count = node('span', itemCountLabel(stack), 'inventory-count');
+                    if (stack.type === 'Money') { count.dataset.moneyAmount = ''; slot.dataset.moneySlot = ''; }
+                    slot.append(count);
+                }
             }
             inventoryPanel.append(slot);
         }

@@ -1,6 +1,9 @@
+import { updateMoneyLabels } from './moneyItem.js';
+import { setupCrashGui } from './crashGui.js';
 import GamblingPayouts from './gamblingPayouts.js';
 import { setupBalanceHud } from './balanceHud.js';
 import GameOver from './gameOver.js';
+import { setupStopwatchGui } from './stopwatchGui.js';
 import { setupCoinFlipGui } from './coinFlipGui.js';
 import Tutorial from './tutorial.js';
 import { setupApartmentInteraction } from './apartmentInteraction.js';
@@ -33,6 +36,7 @@ player.apartment = world.apartment;
 const marketSimulation = new MarketSimulation(resourcePrices, marketHistory, gameState.gameMinutes, seed, marketConfig);
 const newsSimulation = new NewsSimulation(marketSimulation, newsEvents, newsConfig, gameState.gameMinutes, seed);
 player.inventory = new Inventory();
+player.inventory.add('Money', 1);
 player.inventory.add('Radio', 1);
 workerTiers.forEach(validateTier);
 player.miningOutput = { storage: {}, produced: {} };
@@ -68,7 +72,7 @@ const tutorial = new Tutorial(player, world, gui, gameState, canvas, stackIntera
 const tutorialCanOpen = gui.canOpen;
 gui.canOpen = name => !gameOver.active && tutorialCanOpen(name) &&
     (world.scene === 'outside' || !['market', 'mining-house'].includes(name)) &&
-    (name !== 'coin-flip' || world.scene === 'casino');
+    (!['coin-flip', 'stopwatch', 'crash'].includes(name) || world.scene === 'casino');
 window.addEventListener('keydown', event => {
     if (event.code !== 'KeyR' || event.repeat || event.ctrlKey || event.metaKey || event.altKey ||
         event.target?.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target?.tagName) ||
@@ -83,7 +87,9 @@ setupApartmentInteraction(world, player, gui, gameState, tutorial);
 setupInventoryGui(gui, player.inventory, stackInteraction, refreshCursor);
 const newsBubble = setupNewsBubble(gui, player, newsSimulation, world, canvas);
 const coinFlipGui = setupCoinFlipGui(gui, world, player, seed, gamblingPayouts);
-gameOver.canStart = () => !gamblingPayouts.hasPending && !coinFlipGui.blocksGameOver;
+const stopwatchGui = setupStopwatchGui(gui, world, player, seed, gamblingPayouts);
+const crashGui = setupCrashGui(gui, world, player, seed);
+gameOver.canStart = () => !gamblingPayouts.hasPending && !coinFlipGui.blocksGameOver && !stopwatchGui.blocksGameOver && !crashGui.blocksGameOver;
 const updateMarketGui = setupMarketGui(gui, world.market, player);
 const updateMiningGui = setupMiningHouseGui(gui, world.miningHouse, player, stackInteraction, refreshCursor);
 setupPauseMenu(() => {
@@ -139,9 +145,12 @@ function drawClock() {
 }
 
 function gameLoop(now) {
+    crashGui.update();
+    stopwatchGui.update();
     gamblingPayouts.update(now);
     gameOver.update(now);
     updateBalanceHud(gameOver.active);
+    updateMoneyLabels();
     if (gameOver.active) { requestAnimationFrame(gameLoop); return; }
     const deltaSeconds = simulationClock.tick(now);
     if (!simulationClock.paused && !gui.isOpen && !newsBubble.isOpen && tutorial.canMove && !document.hidden) {

@@ -17,7 +17,7 @@ export function minerStore(miner) {
             if (stack && stack.type !== type) throw new Error('Wrong material slot');
             miner.storage[type] = stack?.count ?? 0;
         },
-        accepts: (key, type) => key === type,
+        accepts: () => false, // Output is collection-only; cancellation still restores unfinished pickups.
         limit: () => Infinity,
         snapshot: () => ({ storage: { ...miner.storage }, produced: { ...miner.produced } }),
         restore(snapshot) {
@@ -75,7 +75,7 @@ export default class StackInteraction {
         if (store !== this.playerStore) {
             const moved = this.inventory.addSome(slot.type, slot.count);
             store.set(key, slot.count > moved ? { ...slot, count: slot.count - moved } : null);
-        } else if (otherMiner && items[slot.type].category !== 'equipment') {
+        } else if (otherMiner && (!otherMiner.accepts || otherMiner.accepts(slot.type, slot.type)) && items[slot.type].category !== 'equipment') {
             const existing = otherMiner.get(slot.type);
             otherMiner.set(slot.type, { type: slot.type, count: (existing?.count ?? 0) + slot.count });
             store.set(key, null);

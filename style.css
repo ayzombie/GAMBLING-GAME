@@ -534,3 +534,77 @@ body:has(.tutorial-overlay:popover-open) .game-modal::backdrop { background: tra
 .market-inventory .inventory-slot:hover { background: #8b8b8b; }
 @media (max-width: 850px) { .market-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 450px) { .market-list { grid-template-columns: 1fr; } }
+
+/* Full-screen coin reveal, with two embossed faces and a thick 3D rim. */
+.game-modal.coin-reveal-modal {
+    inset: 0; transform: none; margin: 0; width: 100vw; max-width: none;
+    height: 100dvh; max-height: none; padding: 0; border: 0; border-radius: 0;
+    background: radial-gradient(ellipse at 50% 54%, #634154 0%, #252238 38%, #090e1c 85%);
+}
+.coin-reveal-modal .game-modal-content {
+    height: 100%; min-height: 560px; display: grid;
+    grid-template-rows: auto auto minmax(180px, 1fr) auto;
+    background: linear-gradient(115deg, transparent 32%, #e1b97108 45%, transparent 55%);
+}
+.reveal-header { text-align: center; padding: 64px 16px 0; }
+.reveal-header small { color: #e5bf79; font-size: 11px; letter-spacing: 4px; }
+.reveal-header h2 { font: bold clamp(24px, 4vw, 42px) Georgia, serif; margin: 4px 0; color: #ffe8ad; }
+.reveal-header p { margin: 4px 0; font-size: 14px; color: #c9bfd0; }
+.reveal-counter { text-align: center; font-size: 12px; letter-spacing: 3px; color: #edd5a4; margin: 10px 0; }
+.reveal-arena { position: relative; perspective: 900px; --coin-size: clamp(125px, 19vh, 190px); --toss-height: min(18vh, 160px); }
+.reveal-arena::before { content: ''; position: absolute; width: min(700px, 95vw); height: 130px; left: 50%; bottom: 4%; transform: translateX(-50%); border: 1px solid #e8bd7038; border-radius: 50%; background: radial-gradient(ellipse, #edc97822, transparent 65%); box-shadow: 0 0 70px #edbb4712; }
+.reveal-rig { position: absolute; width: var(--coin-size); height: var(--coin-size); left: calc(50% - var(--coin-size) / 2); bottom: 12%; transform-style: preserve-3d; will-change: transform; }
+.reveal-coin { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; will-change: transform; }
+.reveal-face, .reveal-edge { position: absolute; inset: 0; border-radius: 50%; box-sizing: border-box; }
+.reveal-edge { background: #b58134; border: 2px dashed #edc576; }
+.reveal-face { display: flex; flex-direction: column; align-items: center; justify-content: center; backface-visibility: hidden; border: 7px solid #f7d98d; outline: 2px dashed #b58a3f; outline-offset: -14px; background: radial-gradient(circle at 28% 20%, #fff2bc, #e5b658 55%, #a86c2e); color: #765120; box-shadow: 0 0 36px #e9c57265, inset 0 0 10px #9a6226; }
+.reveal-heads { transform: translateZ(7px); }
+.reveal-tails { transform: rotateX(180deg) translateZ(7px); background: radial-gradient(circle at 28% 20%, #e9f9ff, #a8c6d6 55%, #607eaa); border-color: #d8ecf5; outline-color: #718fa3; color: #3b5c77; box-shadow: 0 0 36px #8bd6ed65, inset 0 0 10px #547287; }
+.reveal-face strong { font: bold calc(var(--coin-size) * .36) Georgia, serif; line-height: 1.1; text-shadow: 1px 2px #fff8; }
+.reveal-engraving { font: bold clamp(7px, 1.1vh, 11px) Arial; letter-spacing: 1px; }
+.reveal-face-label { font: bold clamp(12px, 1.8vh, 18px) Georgia; letter-spacing: 3px; }
+.reveal-shadow { position: absolute; left: 50%; bottom: 9%; width: 180px; height: 30px; border-radius: 50%; background: radial-gradient(ellipse, #000b, transparent 70%); }
+.reveal-footer { z-index: 1; text-align: center; padding: 8px 20px 24px; min-height: 160px; box-sizing: border-box; }
+.reveal-results { display: flex; justify-content: center; gap: 12px; }
+.reveal-result-coin { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid #8e7f68; border-radius: 50%; color: #867b74; background: #141b2b; font: bold 18px Georgia; }
+.reveal-result-coin.current { border-color: #f8d583; box-shadow: 0 0 14px #f6cf6455; }
+.reveal-result-coin.revealed { background: #d8b46b; color: #493327; border-color: #ffde96; }
+.reveal-status { min-height: 28px; margin: 12px 0; color: #d6c5b3; font-size: 17px; }
+.reveal-status[data-result='win'] { color: #a4efc0; }
+.reveal-status[data-result='loss'] { color: #f5b4bd; }
+.reveal-footer .coin-flip-button { width: auto; min-width: 190px; }
+.reveal-footer [hidden] { display: none; }
+@media (max-height: 650px) {
+    .coin-reveal-modal .game-modal-content { min-height: 420px; }
+    .reveal-header { padding-top: 52px; }
+    .reveal-header h2 { font-size: 24px; }
+    .reveal-footer { padding-bottom: 12px; min-height: 125px; }
+    .reveal-arena { --coin-size: 115px; --toss-height: 60px; }
+    .reveal-status { font-size: 14px; }
+}
+
+/* Coins keep their own place in the row after landing. */
+.reveal-coins { position: absolute; inset: 0; width: min(1100px, calc(100% - 32px)); margin: 0 auto; display: flex; gap: 12px; }
+.reveal-coin-slot { position: relative; flex: 1; min-width: 0; perspective: 900px; --coin-size: min(clamp(125px, 19vh, 190px), calc((100vw - 64px) / var(--coin-count) - 14px)); }
+.reveal-coin-slot .reveal-shadow { width: var(--coin-size); }
+.reveal-coin-slot .reveal-face { border-width: clamp(2px, calc(var(--coin-size) * .04), 7px); outline-offset: calc(var(--coin-size) * -.08); }
+.reveal-coin-slot .reveal-engraving { font-size: calc(var(--coin-size) * .055); letter-spacing: .5px; }
+.reveal-coin-slot .reveal-face-label { font-size: calc(var(--coin-size) * .095); letter-spacing: 1px; }
+@media (max-height: 650px) {
+    .reveal-coin-slot { --coin-size: min(115px, calc((100vw - 64px) / var(--coin-count) - 14px)); }
+}
+
+.stopwatch-fields { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 24px; }
+.stopwatch-fields label { flex: 1; min-width: 180px; }
+.stopwatch-clock { font: bold clamp(48px, 9vw, 100px) monospace; text-align: center; color: #99ffdf; text-shadow: 0 0 25px #3de5b466; padding: 36px 0; font-variant-numeric: tabular-nums; }
+.stopwatch-modal .coin-flip-button { width: 100%; }
+
+.crash-ring { position: relative; width: min(310px, 65vw); aspect-ratio: 1; border-radius: 50%; margin: 30px auto; box-shadow: 0 0 35px #efc65033; border: 3px solid #625b41; }
+.crash-ring::before { content: ''; position: absolute; inset: 23px; border-radius: 50%; background: #191323; }
+.crash-multiplier { position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(22px, 4vw, 36px); color: #ffeab0; }
+.crash-marker { position: absolute; inset: -9px; z-index: 1; pointer-events: none; }
+.crash-marker::before { content: ''; position: absolute; left: calc(50% - 6px); top: 0; width: 12px; height: 38px; border-radius: 5px; background: white; box-shadow: 0 0 12px white; }
+.crash-controls { display: flex; gap: 16px; margin-top: 20px; flex-wrap: wrap; }
+.crash-controls button { flex: 1; }
+
+.inventory-count[data-money-amount] { max-width: 100%; font-size: clamp(9px, 1.1vw, 14px); overflow-wrap: anywhere; white-space: normal; }

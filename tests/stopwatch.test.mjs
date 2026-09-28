@@ -43,3 +43,32 @@ for(let gameSeed=0;gameSeed<100;gameSeed++) {
 for (const value of ['',0,-1,'1.2345',Infinity,NaN,null]) assert.throws(() => parse(value));
 assert.equal(stop(NaN,exact).won,false);
 console.log('Passed five multiplier ranges, seeded stability, simplicity ordering, mode precision, 1.5× speed, and ±5ms boundaries.');
+
+const {default: Round} = await import(moduleURL('games/stopwatchRound.js'));
+const {default: Payouts} = await import(moduleURL('gamblingPayouts.js'));
+for (const mode of Object.keys(stopwatchConfig.modes)) {
+    const wallet = {balance:100};
+    const payouts = new Payouts();
+    const round = new Round(wallet, payouts, '3.5', mode, 123, 25, 0);
+    assert.equal(wallet.balance,75);
+    assert.equal(payouts.hasPending,true);
+    const result = round.stop(3500 / round.quote.speed);
+    assert.equal(result.won,true);
+    assert.equal(wallet.balance,75+result.payout);
+    round.stop(9999); payouts.update(99999);
+    assert.equal(wallet.balance,75+result.payout);
+    assert.equal(payouts.hasPending,false);
+}
+for (const scenario of ['miss','forfeit','timeout']) {
+    const wallet = {balance:25}; const payouts = new Payouts();
+    const round = new Round(wallet,payouts,'3.5','oneDecimal',123,25,0);
+    if (scenario === 'timeout') { payouts.update(4500); round.update(4500); }
+    else round.stop(scenario === 'miss' ? 3000 : 3500, scenario === 'forfeit');
+    assert.equal(round.result.won,false); assert.equal(wallet.balance,0); assert.equal(payouts.hasPending,false);
+}
+for (const wager of [0,-1,0.5,25.001,101,NaN,Infinity]) {
+    const wallet = {balance:100};
+    assert.throws(() => new Round(wallet,new Payouts(),'3.5','oneDecimal',123,wager,0));
+    assert.equal(wallet.balance,100);
+}
+console.log('Passed stopwatch wager debit, automatic exact-once payouts, five-mode wins, misses, forfeits, timeouts and invalid bets.');

@@ -1,19 +1,20 @@
-import { createItemIcon } from './items.js';
+import { createItemIcon, itemCountLabel } from './items.js';
 
 export function createStackSlot(store, key, interaction, refresh, transferTarget = null) {
     const stack = store.get(key);
     const slot = document.createElement('button');
     slot.type = 'button';
     slot.className = 'inventory-slot';
-    const label = stack ? `${stack.type}: ${stack.count}` : typeof key === 'string' ? `${key}: 0` : 'Empty slot';
+    const label = stack ? `${stack.type}: ${itemCountLabel(stack)}` : typeof key === 'string' ? `${key}: 0` : 'Empty slot';
     slot.title = label;
     slot.setAttribute('aria-label', label);
     if (stack) {
         slot.append(createItemIcon(stack.type));
-        if (stack.count > 1) {
+        if (stack.count > 1 || stack.type === 'Money') {
             const count = document.createElement('span');
             count.className = 'inventory-count';
-            count.textContent = stack.count;
+            count.textContent = itemCountLabel(stack);
+            if (stack.type === 'Money') { count.dataset.moneyAmount = ''; slot.dataset.moneySlot = ''; }
             slot.append(count);
         }
     } else if (typeof key === 'string') {
@@ -59,7 +60,8 @@ export function setupCursorStack(gui, interaction) {
             cursor.append(createItemIcon(interaction.held.type));
             const count = document.createElement('span');
             count.className = 'inventory-count';
-            count.textContent = interaction.held.count;
+            count.textContent = itemCountLabel(interaction.held);
+            if (interaction.held.type === 'Money') count.dataset.moneyAmount = '';
             cursor.append(count);
             if (!cursor.matches(':popover-open')) cursor.showPopover();
         } else if (cursor.matches(':popover-open')) cursor.hidePopover();

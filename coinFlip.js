@@ -3,35 +3,35 @@ import GamblingPayouts from './gamblingPayouts.js';
 export const MINIMUM_COIN_BET = 25;
 
 // Multipliers are total returns, including the original wager.
-// A strict majority includes unanimous results; an even split is not a majority.
+// Majority bets require both faces: unanimous results and ties do not qualify.
 export const coinFlipOptions = {
     1: [
         { id: 'heads', label: 'Heads', multiplier: 1.5, heads: 1 },
         { id: 'tails', label: 'Tails', multiplier: 1.5, heads: 0 },
     ],
     2: [
-        { id: 'heads', label: '2 heads', multiplier: 3, heads: 2 },
+        { id: 'heads', label: '2 heads', multiplier: 2, heads: 2 },
         { id: 'split', label: '1 head, 1 tail', multiplier: 1.5, heads: 1 },
-        { id: 'tails', label: '2 tails', multiplier: 3, heads: 0 },
+        { id: 'tails', label: '2 tails', multiplier: 2, heads: 0 },
     ],
     3: [
-        { id: 'heads', label: '3 heads', multiplier: 6, heads: 3 },
+        { id: 'heads', label: '3 heads', multiplier: 5, heads: 3 },
         { id: 'more-heads', label: 'More heads than tails', multiplier: 2, majority: 'heads' },
         { id: 'more-tails', label: 'More tails than heads', multiplier: 2, majority: 'tails' },
-        { id: 'tails', label: '3 tails', multiplier: 6, heads: 0 },
+        { id: 'tails', label: '3 tails', multiplier: 5, heads: 0 },
     ],
     4: [
-        { id: 'heads', label: '4 heads', multiplier: 20, heads: 4 },
-        { id: 'more-heads', label: 'More heads than tails', multiplier: 5, majority: 'heads' },
-        { id: 'more-tails', label: 'More tails than heads', multiplier: 5, majority: 'tails' },
-        { id: 'split', label: '2 heads, 2 tails', multiplier: 4, heads: 2 },
-        { id: 'tails', label: '4 tails', multiplier: 18, heads: 0 },
+        { id: 'heads', label: '4 heads', multiplier: 15, heads: 4 },
+        { id: 'more-heads', label: 'More heads than tails', multiplier: 3, majority: 'heads' },
+        { id: 'more-tails', label: 'More tails than heads', multiplier: 3, majority: 'tails' },
+        { id: 'split', label: '2 heads, 2 tails', multiplier: 2, heads: 2 },
+        { id: 'tails', label: '4 tails', multiplier: 15, heads: 0 },
     ],
     5: [
-        { id: 'heads', label: '5 heads', multiplier: 50, heads: 5 },
+        { id: 'heads', label: '5 heads', multiplier: 25, heads: 5 },
         { id: 'more-heads', label: 'More heads than tails', multiplier: 2, majority: 'heads' },
         { id: 'more-tails', label: 'More tails than heads', multiplier: 2, majority: 'tails' },
-        { id: 'tails', label: '5 tails', multiplier: 50, heads: 0 },
+        { id: 'tails', label: '5 tails', multiplier: 25, heads: 0 },
     ],
 };
 
@@ -76,8 +76,8 @@ export default class CoinFlip {
         const option = coinFlipOptions[count].find(option => option.id === optionId);
         const coins = Array.from({ length: count }, () => this.random() < 0.5 ? 'heads' : 'tails');
         const heads = coins.filter(face => face === 'heads').length;
-        const won = option.majority === 'heads' ? heads > count / 2 :
-            option.majority === 'tails' ? heads < count / 2 : heads === option.heads;
+        const won = option.majority === 'heads' ? heads > count / 2 && heads < count :
+            option.majority === 'tails' ? heads < count / 2 && heads > 0 : heads === option.heads;
         const stake = moneyToCents(wager);
         const payout = won ? Math.round(stake * option.multiplier) : 0;
         this.pendingPayout = this.payouts.schedule(wallet, stake, payout, delayMs, now);

@@ -1,14 +1,15 @@
+import CoinReveal, { coinRevealTiming } from './coinReveal.js';
 import { ownsApartment, APARTMENT_REQUIRED } from './playerAccess.js';
 import CoinFlip, { coinFlipOptions, MINIMUM_COIN_BET, validateCoinBet } from './coinFlip.js';
 import { gameState } from './gameData.js';
 
-const FLIP_DURATION_MS = 1100;
 const RESULT_READ_MS = 2000;
 const dollars = value => `$${value.toFixed(2)}`;
 
 export function setupCoinFlipGui(gui, world, player, seed, payouts) {
     const game = new CoinFlip(seed, () => ownsApartment(player), payouts);
     let count = null, selected = null, wager = '25', flippingUntil = 0;
+    let reveal = null, revealStartedAt = 0;
     let balanceLabel, input, flipButton, preview, status, stage, outcomeButtons = [], backButton;
     let renderedRound = null;
     let resultVisibleSince = null;
@@ -30,6 +31,7 @@ export function setupCoinFlipGui(gui, world, player, seed, payouts) {
         right.append(balanceLabel, close); bar.append(heading, right); content.append(bar);
     }
     function categories(content) {
+        reveal = null; gui.dialog.classList.remove('coin-reveal-modal');
         gui.setBack();
         count = selected = null; input = flipButton = preview = stage = backButton = null;
         outcomeButtons = []; renderedRound = null;
@@ -62,6 +64,7 @@ export function setupCoinFlipGui(gui, world, player, seed, payouts) {
         }
     }
     function details(content, n) {
+        reveal = null; gui.dialog.classList.remove('coin-reveal-modal');
         gui.setBack(() => { if (!isFlipping()) categories(content); });
         count = n; selected = null; renderedRound = null;
         content.replaceChildren(); header(content, `${n} ${n === 1 ? 'coin' : 'coins'}`);
@@ -95,23 +98,35 @@ export function setupCoinFlipGui(gui, world, player, seed, payouts) {
         flipButton.addEventListener('click', () => {
             if (isFlipping()) return;
             const now = performance.now();
-            const result = game.play(gameState, count, selected, Number(input.value), FLIP_DURATION_MS, now);
+            const duration = coinRevealTiming(count).total;
+            const result = game.play(gameState, count, selected, Number(input.value), duration, now);
             if (!result.ok) { status.textContent = result.error; return; }
-            flippingUntil = now + FLIP_DURATION_MS;
+            flippingUntil = now + duration;
+            revealStartedAt = now;
             resultVisibleSince = null;
             renderedRound = null;
-            drawCoins(null, true);
-            status.dataset.result = '';
-            status.textContent = 'Flipping…';
+            showReveal(content);
             update();
         });
         status = node('p', '', 'coin-result'); status.setAttribute('aria-live', 'polite');
         play.append(stage, label, preview, flipButton, status);
         layout.append(options, play); content.append(layout);
-        content.append(node('p', 'Each coin is 50/50. Majority includes all heads or all tails; ties lose majority bets. Multipliers include your original wager.', 'coin-rules'));
+        content.append(node('p', 'Each coin is 50/50. Majority bets require at least one head and one tail; unanimous results and ties lose majority bets. Multipliers include your original wager.', 'coin-rules'));
         gui.dialog.scrollTop = 0; update();
     }
+    function showReveal(content) {
+        gui.dialog.classList.add('coin-reveal-modal');
+        const back = () => { if (!isFlipping()) details(content, game.lastRound.count); };
+        gui.setBack(back);
+        reveal = new CoinReveal(content, game.lastRound, revealStartedAt, back);
+        gui.dialog.scrollTop = 0;
+    }
     function update() {
+        if (reveal) {
+            const finished = reveal.update(performance.now());
+            if (finished && !document.hidden && resultVisibleSince === null) resultVisibleSince = performance.now();
+            return;
+        }
         if (!balanceLabel) return;
         const flipping = isFlipping();
         // The shared payout service credits winnings when the result is revealed.
@@ -138,7 +153,8 @@ export function setupCoinFlipGui(gui, world, player, seed, payouts) {
         }
     }
     gui.register('coin-flip', { label: 'Coin Flip', className: 'coin-modal', render(content) {
-        if (count) details(content, count); else categories(content);
+        if (isFlipping() && game.lastRound) showReveal(content);
+        else if (count) details(content, count); else categories(content);
     }});
     window.addEventListener('keydown', event => {
         if (event.code !== 'KeyR' || event.repeat || event.ctrlKey || event.metaKey || event.altKey ||

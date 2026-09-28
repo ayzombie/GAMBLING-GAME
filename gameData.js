@@ -19,22 +19,22 @@ export const resourceList = [
 
 export const baseResourcePrices = {
     "Dirt": 3,
-    "Wood": 25,
-    "Stone": 40,
-    "Copper": 180,
-    "Iron": 260,
-    "Rubber": 175,
+    "Wood": 20,
+    "Stone": 35,
+    "Copper": 130,
+    "Iron": 210,
+    "Rubber": 275,
     "Oil" : 500,
-    "Gold": 1300,
-    "Ruby": 1800,
-    "Diamond": 3500,
-    "Titanium": 4600,
-    "Neodymium": 7250,
+    "Gold": 800,
+    "Ruby": 1100,
+    "Diamond": 1900,
+    "Titanium": 3300,
+    "Neodymium": 9250,
 };
 
 // Current market prices, initialized once per session within ±5% of the base values.
 export const resourcePrices = createMarketPrices(baseResourcePrices, seed);
-export const gameState = { balance: 1000, gameMinutes: 8 * 60 };
+export const gameState = { balance: 100000, gameMinutes: 8 * 60 };
 export const marketHistory = {};
 export const marketConfig = {
     minIntervalMinutes: 50,
@@ -60,8 +60,8 @@ export const marketConfig = {
 
 // Both upgrade tracks start at level 1 and stop at level 100.
 export const minerUpgrades = {
-    cycleBaseCost: 10,
-    resourceBaseCost: 10,
+    cycleBaseCostRatio: 0.30, // Fraction of this worker’s purchase cost.
+    resourceBaseCostRatio: 0.25,
     costMultiplierPerLevel: 1.73, //use this until lvl 20
     costMultiplierPerLevel2: 1.26,
     maxLevel: 100,

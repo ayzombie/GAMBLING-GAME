@@ -105,7 +105,7 @@ export function setupMiningHouseGui(gui, house, player, interaction, refreshCurs
         content.append(progressSection);
         updateCountdown();
         const drops = element('section', '', 'miner-drops');
-        drops.append(element('h3', 'Materials mined'));
+        drops.append(element('h3', 'Can Mine'));
         const dropList = element('div', '', 'miner-drop-list');
         const totalWeight = tier.drops.reduce((sum, drop) => sum + drop.weight, 0);
         for (const drop of tier.drops.filter(drop => drop.weight > 0)) {

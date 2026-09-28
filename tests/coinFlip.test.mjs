@@ -16,8 +16,8 @@ function moduleURL(file) {
 
 const {default: CoinFlip, coinFlipOptions, validateCoinBet} = await import(moduleURL('coinFlip.js'));
 const expectedMultipliers = {
-    1: [1.5, 1.5], 2: [3, 1.5, 3], 3: [6, 2, 2, 6],
-    4: [20, 5, 5, 4, 18], 5: [50, 2, 2, 50],
+    1: [1.5, 1.5], 2: [2, 1.5, 2], 3: [5, 2, 2, 5],
+    4: [15, 3, 3, 2, 15], 5: [25, 2, 2, 25],
 };
 for (let count=1;count<=5;count++) {
     assert.deepEqual(coinFlipOptions[count].map(option=>option.multiplier), expectedMultipliers[count]);
@@ -30,14 +30,14 @@ for (let count=1;count<=5;count++) {
             const result=game.play(wallet,count,option.id,25);
             assert.equal(result.ok,true);assert.deepEqual(result.round.coins,faces);
             const heads=faces.filter(face=>face==='heads').length;
-            const expectedWin=option.id==='more-heads'?heads>count-heads:option.id==='more-tails'?heads<count-heads:
+            const expectedWin=option.id==='more-heads'?heads>count-heads&&faces.includes('tails'):option.id==='more-tails'?heads<count-heads&&faces.includes('heads'):
                 option.id==='heads'?heads===count:option.id==='tails'?heads===0:heads===count/2;
             assert.equal(result.round.won,expectedWin,`${count} ${option.id} ${faces}`);
             const payout=expectedWin?25*option.multiplier:0;
             assert.equal(result.round.payout,payout);assert.equal(wallet.balance,1000-25+payout);
             if(expectedWin)winners++;
         }
-        if(option.majority) assert.equal(winners,count===4?5:2**(count-1));
+        if(option.majority) assert.equal(winners,count===4?4:2**(count-1)-1);
         else if(option.id==='split')assert.equal(winners,count===2?2:6);
         else assert.equal(winners,1);
     }

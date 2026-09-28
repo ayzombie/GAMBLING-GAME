@@ -15,7 +15,7 @@ export default class CasinoInterior {
             this.props.push({kind:'slot',x:170+col*94,y:310+row*160,width:66,height:92});
         }
         for (const [kind,x,y] of [['roulette',width-530,360],['dice',width-530,820],
-            ['coin',230,830],['stopwatch',width/2-110,260]]) {
+            ['crash',width/2-110,650],['coin',230,830],['stopwatch',width/2-110,260]]) {
             this.props.push({kind,x,y,width:220,height:130});
         }
         for (const x of [230,width-470]) {
@@ -25,8 +25,10 @@ export default class CasinoInterior {
             this.props.push({kind:'plant',x,y,width:50,height:50});
         }
     }
-    canPlayCoinFlip(player) {
-        const table = this.props.find(prop => prop.kind === 'coin');
+    canPlayCoinFlip(player) { return this.canPlayTable(player, 'coin'); }
+    canPlayStopwatch(player) { return this.canPlayTable(player, 'stopwatch'); }
+    canPlayTable(player, kind) {
+        const table = this.props.find(prop => prop.kind === kind);
         const x = Math.max(table.x, Math.min(table.x + table.width, player.x));
         const y = Math.max(table.y, Math.min(table.y + table.height, player.y + 10));
         return Math.hypot(player.x - x, player.y + 10 - y) <= 65;
@@ -72,7 +74,7 @@ export default class CasinoInterior {
                 const x=p.x+110,y=p.y+65;
                 for(let i=0;i<12;i++){ctx.fillStyle=i%2?'#e25e72':'#26323d';ctx.beginPath();ctx.moveTo(x,y);ctx.arc(x,y,40,i*Math.PI/6,(i+1)*Math.PI/6);ctx.closePath();ctx.fill();}
                 ctx.fillStyle='#ecc97a';ctx.beginPath();ctx.arc(x,y,9,0,Math.PI*2);ctx.fill();
-            } else label(ctx,p.kind==='dice'?'⚄  ⚂':p.kind==='coin'?'◉':'00:00',p.x+110,p.y+77,'#f2de99',32);
+            } else label(ctx,p.kind==='dice'?'⚄  ⚂':p.kind==='coin'?'◉':p.kind==='crash'?'↗ CRASH':'00:00',p.x+110,p.y+77,'#f2de99',32);
         }
     }
     draw(ctx, viewWidth, viewHeight, player, world) {
@@ -113,6 +115,16 @@ export default class CasinoInterior {
             const table = this.props.find(prop => prop.kind === 'coin');
             box(ctx,table.x+10,table.y+table.height+22,200,34,'#151728ed',8);
             label(ctx,'R · Coin Flip · $25 min',table.x+110,table.y+table.height+45,'#fff2be',14);
+        }
+        if (this.canPlayStopwatch(player)) {
+            const table = this.props.find(prop => prop.kind === 'stopwatch');
+            box(ctx,table.x+10,table.y+table.height+22,200,34,'#151728ed',8);
+            label(ctx,'R · Stopwatch',table.x+110,table.y+table.height+45,'#fff2be',14);
+        }
+        if (this.canPlayTable(player,'crash')) {
+            const table=this.props.find(prop=>prop.kind==='crash');
+            box(ctx,table.x+10,table.y+table.height+22,200,34,'#151728ed',8);
+            label(ctx,'R · Crash · $100 min',table.x+110,table.y+table.height+45,'#fff2be',14);
         }
         if(this.canExit(player)) {
             box(ctx,this.exit.x-90,h-190,180,34,'#151728ed',8);

@@ -2,11 +2,11 @@ import { seed } from '../gameSeed.js';
 
 export const stopwatchConfig = {
     modes: {
-        oneDecimal: { label: '1 decimal', decimals: 1, speed: 1, toleranceMs: 0, minMultiplier: 1.5, maxMultiplier: 8 },
-        twoDecimals: { label: '2 decimals', decimals: 2, speed: 1, toleranceMs: 0, minMultiplier: 30, maxMultiplier: 70 },
-        twoDecimalsFast: { label: '2 decimals · 1.5× speed', decimals: 2, speed: 1.5, toleranceMs: 0, minMultiplier: 150, maxMultiplier: 400 },
-        threeDecimalsForgiving: { label: '3 decimals · ±5ms', decimals: 3, speed: 1, toleranceMs: 5, minMultiplier: 750, maxMultiplier: 1500 },
-        threeDecimals: { label: '3 decimals · exact', decimals: 3, speed: 1, toleranceMs: 0, minMultiplier: 8000, maxMultiplier: 12000 },
+        oneDecimal: { label: '1 decimal', decimals: 1, speed: 1, toleranceMs: 0, minMultiplier: 1.1, maxMultiplier: 4 },
+        twoDecimals: { label: '2 decimals', decimals: 2, speed: 1, toleranceMs: 0, minMultiplier: 25, maxMultiplier: 75 },
+        twoDecimalsFast: { label: '2 decimals · 1.5× speed', decimals: 2, speed: 1.5, toleranceMs: 0, minMultiplier: 175, maxMultiplier: 250 },
+        threeDecimalsForgiving: { label: '3 decimals · ±5ms', decimals: 3, speed: 1, toleranceMs: 5, minMultiplier: 550, maxMultiplier: 900 },
+        threeDecimals: { label: '3 decimals · exact', decimals: 3, speed: 1, toleranceMs: 0, minMultiplier: 3000, maxMultiplier: 6000 },
     },
 };
 
