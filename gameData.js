@@ -34,7 +34,7 @@ export const baseResourcePrices = {
 
 // Current market prices, initialized once per session within ±5% of the base values.
 export const resourcePrices = createMarketPrices(baseResourcePrices, seed);
-export const gameState = { balance: 100000, gameMinutes: 8 * 60 };
+export const gameState = { balance: 1000, gameMinutes: 8 * 60 };
 export const marketHistory = {};
 export const marketConfig = {
     minIntervalMinutes: 50,
